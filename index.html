@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PsiSearch • Single File (v0.6.5)</title>
+  <title>PsiSearch • Single File (v0.6.6)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
@@ -56,9 +56,11 @@
     html.dark #btnTheme { background: #0d1832 !important; color: var(--ink-1) !important; border-color: var(--input-border) !important; }
 
     @media print { header, aside, footer { display: none !important; } main { display:block; margin:0; padding:0; } .rounded-3xl{ break-inside: avoid; } }
-    .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.4rem .8rem; border-radius:999px; border:1px solid #e5e7eb; background:#fff; font-size:.75rem; }
-    .btn-solid { display:inline-flex; align-items:center; gap:.5rem; padding:.4rem .8rem; border-radius:999px; background:#4f46e5; color:#fff; font-size:.75rem; }
+    .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.35rem .7rem; border-radius:999px; border:1px solid #e5e7eb; background:#fff; font-size:.75rem; }
+    .btn-solid { display:inline-flex; align-items:center; gap:.5rem; padding:.35rem .7rem; border-radius:999px; background:#4f46e5; color:#fff; font-size:.75rem; }
     .btn[disabled]{ opacity:.5; cursor:not-allowed; }
+    .btn-ghost { display:inline-flex; align-items:center; gap:.3rem; padding:.2rem .55rem; border-radius:999px; background:transparent; border:1px dashed #cbd5e1; font-size:.72rem; color:#334155; }
+    html.dark .btn-ghost { border-color: var(--chip-border); color: var(--ink-2); }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50">
@@ -68,7 +70,7 @@
         <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow">Ψ</div>
         <div class="leading-tight">
           <div class="text-sm font-semibold text-gray-900">PsiSearch</div>
-          <div class="text-[11px] text-gray-500">Single-file • v0.6.5</div>
+          <div class="text-[11px] text-gray-500">Single-file • v0.6.6</div>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -119,6 +121,10 @@
             <input id="oaOnly" type="checkbox" class="rounded border-gray-300" />
             Apenas Open Access (aprox.)
           </label>
+          <label class="mt-2 flex items-center gap-2 text-sm text-gray-700">
+            <input id="favOnly" type="checkbox" class="rounded border-gray-300" />
+            Mostrar apenas favoritos
+          </label>
         </div>
 
         <div>
@@ -160,16 +166,16 @@
 
   <footer class="mx-auto max-w-6xl px-4 pb-10 text-xs text-gray-500">
     <div class="rounded-3xl bg-white/60 p-4 border border-gray-100">
-      Preview • v0.6.5
+      Preview • v0.6.6
     </div>
   </footer>
 
-  <!-- Script: v0.6.5 (lógica de busca intacta; adiciona apenas validação de PDFs) -->
+  <!-- Script: v0.6.6 (mesma busca da v0.6.5; adiciona favoritos + filtro) -->
   <script>
   (function(){
     function $(id){ return document.getElementById(id); }
     var h_crossref = $('h_crossref'), h_pubmed = $('h_pubmed'), h_doaj = $('h_doaj');
-    var resultsEl = $('results'), qEl=$('q'), yearFromEl=$('yearFrom'), yearToEl=$('yearTo'), oaOnlyEl=$('oaOnly');
+    var resultsEl = $('results'), qEl=$('q'), yearFromEl=$('yearFrom'), yearToEl=$('yearTo'), oaOnlyEl=$('oaOnly'), favOnlyEl=$('favOnly');
     var resultsHeader = $('resultsHeader'); var savedListEl = $('savedList');
     var orderByEl = $('orderBy'); var paginationEl = $('pagination');
     var LAST_RESULTS = []; var CURRENT_PAGE = 1; var PAGE_SIZE = 15;
@@ -251,7 +257,6 @@
               var langArr=Array.isArray(it.lang)?it.lang:[]; var langMap={eng:'en',por:'pt',spa:'es',fra:'fr'}; var language=langMap[langArr[0]]||langArr[0]||null;
               var url='https://pubmed.ncbi.nlm.nih.gov/'+uid+'/';
               var pmc = Array.isArray(it.articleids)?it.articleids.find(function(a){return a.idtype==='pmcid';}):null;
-              // Tente duas variantes de PDF
               var pdf = pmc ? ('https://www.ncbi.nlm.nih.gov/pmc/articles/'+pmc.value+'/pdf/') : null;
               return classify({ id: doi||('pubmed:'+uid), title:title, authors:authors, year:year, journal:journal, doi:doi, abstract:'', oa:false, language:language, url:url, pdf: pdf, sources:['PubMed'] });
             }).filter(Boolean); });
@@ -273,7 +278,7 @@
         });});
     }
 
-    // ===== Validação de PDF (best-effort) =====
+    // ===== Validação de PDF (da v0.6.5) =====
     function pmcVariants(url){
       var m = url && url.match(/\/pmc\/articles\/(PMC\d+)\/pdf\/?$/i);
       if(!m) return [url].filter(Boolean);
@@ -283,10 +288,9 @@
         'https://www.ncbi.nlm.nih.gov/pmc/articles/'+id+'/pdf/'+id+'.pdf'
       ];
     }
-
     function fetchHead(url, opts){ return fetch(url, Object.assign({ method:'HEAD' }, opts||{})); }
     function fetchRange(url, opts){ return fetch(url, Object.assign({ method:'GET', headers:{'Range':'bytes=0-0'} }, opts||{})); }
-
+    function timeout(ms){ return new Promise(function(_,rej){ setTimeout(function(){ rej(new Error('timeout')); }, ms); }); }
     async function validatePdfUrl(url){
       if(!url) return false;
       var tries = pmcVariants(url);
@@ -296,18 +300,14 @@
           var res = await Promise.race([fetchHead(u), timeout(5000)]);
           if (res && (res.status===200 || res.status===206)) return u;
           if (res && (res.status===405 || res.status===403 || res.status===0)) {
-            // Tenta GET com Range (alguns hosts não aceitam HEAD / CORS)
             var res2 = await Promise.race([fetchRange(u), timeout(7000)]);
             if (res2 && (res2.ok || res2.status===206)) return u;
           }
           if (res && res.status===200) return u;
-        } catch(e){
-          // ignora e tenta próximo
-        }
+        } catch(e){}
       }
       return false;
     }
-
     function enhancePdfButtons(scope){
       var container = scope || document;
       var buttons = container.querySelectorAll('button[data-pdf]');
@@ -336,59 +336,152 @@
         });
       });
     }
-    // =========================================
+    // ========================================
 
+    // ===== Favoritos (novo) =====
+    var FAV_KEY='psisearch_saved_v1'; // reutiliza armazenamento já usado em "Itens salvos"
+    function loadFavs(){ try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch(e){ return []; } }
+    function saveFavs(items){ localStorage.setItem(FAV_KEY, JSON.stringify(items)); }
+    function isFav(id){ return loadFavs().some(function(x){ return x.id===id; }); }
+    function toggleFavById(id){
+      var favs = loadFavs();
+      var idx = favs.findIndex(function(x){ return x.id===id; });
+      if(idx>=0){ favs.splice(idx,1); }
+      else{
+        var item = LAST_RESULTS.find(function(x){ return x.id===id; });
+        if(!item){ // fallback: se não estiver na página atual, mantém como está
+          return;
+        }
+        favs.unshift(item);
+      }
+      saveFavs(favs);
+      renderSaved();
+      updateFavStars();
+      if (favOnlyEl.checked) renderResults();
+    }
+    function updateFavStars(){
+      var buttons = resultsEl.querySelectorAll('button[data-act="fav"]');
+      buttons.forEach(function(btn){
+        var id = btn.getAttribute('data-id');
+        var on = isFav(id);
+        btn.innerHTML = on ? '★ Favorito' : '☆ Favoritar';
+        btn.className = on ? 'btn-solid' : 'btn-ghost';
+        btn.title = on ? 'Remover dos favoritos' : 'Adicionar aos favoritos';
+      });
+    }
+    // Painel "Itens salvos" continua o mesmo, mas sincroniza as estrelas
     var STORAGE_KEY='psisearch_saved_v1';
-    function loadSaved(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e){ return []; } }
-    function saveSaved(items){ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+    function loadSaved(){ return loadFavs(); }
+    function saveSaved(items){ saveFavs(items); }
     function bibtex(item){ var authors=(item.authors||[]).join(' and '); var key=((item.authors&&item.authors[0]&&item.authors[0].split(' ')[0])||'ref').toLowerCase()+(item.year||''); return '@article{'+key+',\n  title={'+(item.title||'')+'},\n  author={'+authors+'},\n  journal={'+(item.journal||'')+'},\n  year={'+(item.year||'')+'},\n  doi={'+(item.doi||'')+'}\n}'; }
-    function renderSaved(){ var saved = loadSaved(); if(saved.length===0){ savedListEl.innerHTML='<div class="text-gray-500">Nada salvo ainda.</div>'; return; }
-      savedListEl.innerHTML = saved.map(function(s){ return '<div class="flex items-start justify-between gap-3"><div><div class="text-sm font-medium text-gray-800 line-clamp-2">'+(s.title||'')+'</div><div class="text-xs text-gray-500">'+(((s.authors||[])[0])||'')+' et al., '+(s.year||'')+'</div></div><div class="flex gap-2"><button class="rounded-2xl border border-gray-200 px-3 py-1 text-xs" data-action="copy" data-id="'+s.id+'">BibTeX</button><button class="rounded-2xl border border-gray-200 px-3 py-1 text-xs" data-action="remove" data-id="'+s.id+'">Remover</button></div></div>'; }).join(''); }
+    function renderSaved(){
+      var saved = loadSaved();
+      if(saved.length===0){ savedListEl.innerHTML='<div class="text-gray-500">Nada salvo ainda.</div>'; return; }
+      savedListEl.innerHTML = saved.map(function(s){
+        return '<div class="flex items-start justify-between gap-3">'+
+          '<div><div class="text-sm font-medium text-gray-800 line-clamp-2">'+(s.title||'')+'</div>'+
+          '<div class="text-xs text-gray-500">'+(((s.authors||[])[0])||'')+' et al., '+(s.year||'')+'</div></div>'+
+          '<div class="flex gap-2">'+
+            '<button class="rounded-2xl border border-gray-200 px-3 py-1 text-xs" data-action="copy" data-id="'+s.id+'">BibTeX</button>'+
+            '<button class="rounded-2xl border border-gray-200 px-3 py-1 text-xs" data-action="remove" data-id="'+s.id+'">Remover</button>'+
+          '</div></div>';
+      }).join('');
+    }
+    savedListEl.addEventListener('click', function(e){
+      var btn = e.target.closest ? e.target.closest('button') : e.target;
+      if(!btn || btn.tagName!=='BUTTON') return;
+      var id = btn.getAttribute('data-id');
+      var action = btn.getAttribute('data-action');
+      var saved = loadSaved();
+      var item = saved.find(function(x){ return x.id===id; });
+      if(!item) return;
+      if(action==='copy'){
+        navigator.clipboard.writeText(bibtex(item));
+        btn.textContent='Copiado!'; setTimeout(function(){btn.textContent='BibTeX';},1200);
+      }
+      if(action==='remove'){
+        saveSaved(saved.filter(function(x){return x.id!==id;}));
+        renderSaved();
+        updateFavStars();
+        if (favOnlyEl.checked) renderResults();
+      }
+    });
+    // ========================================
 
-    function readParams(){ var p = new URLSearchParams(location.search); if (p.get('q')) $('q').value = p.get('q'); if (p.get('y1')) $('yearFrom').value = p.get('y1'); if (p.get('y2')) $('yearTo').value = p.get('y2'); var order = p.get('ord'); if(order) orderByEl.value = order; var pops = p.get('pops'); if (pops){ var set = {}; pops.split(',').forEach(function(x){ set[x]=true; }); document.querySelectorAll('.pop').forEach(function(el){ el.checked = !!set[el.value]; }); } }
-    function writeParams(){ var p = new URLSearchParams(location.search); p.set('q', $('q').value || ''); p.set('y1', $('yearFrom').value || '2019'); p.set('y2', $('yearTo').value || '2025'); p.set('ord', orderByEl.value); var pops = Array.from(document.querySelectorAll('.pop:checked')).map(function(el){return el.value;}).join(','); p.set('pops', pops); history.replaceState(null, '', '?' + p.toString()); }
+    function renderPagination(total,page,pageSize){
+      var pages=Math.max(1,Math.ceil(total/pageSize));
+      if(pages<=1){ paginationEl.innerHTML=''; return; }
+      var disablePrev=page<=1; var disableNext=page>=pages;
+      paginationEl.innerHTML=
+        '<button id="pgFirst" class="rounded-2xl border border-gray-200 px-3 py-1 text-sm bg-white" '+(disablePrev?'disabled':'')+'>« Primeiro</button>'+
+        '<button id="pgPrev" class="rounded-2xl border border-gray-200 px-3 py-1 text-sm bg-white" '+(disablePrev?'disabled':'')+'>‹ Anterior</button>'+
+        '<span class="text-sm text-gray-700">Página '+page+' de '+pages+'</span>'+
+        '<button id="pgNext" class="rounded-2xl border border-gray-200 px-3 py-1 text-sm bg-white" '+(disableNext?'disabled':'')+'>Próxima ›</button>'+
+        '<button id="pgLast" class="rounded-2xl border border-gray-200 px-3 py-1 text-sm bg-white" '+(disableNext?'disabled':'')+'>Última »</button>';
+      $('pgFirst').onclick=function(){CURRENT_PAGE=1;renderResults();};
+      $('pgPrev').onclick=function(){ if(CURRENT_PAGE>1){CURRENT_PAGE--;renderResults();} };
+      $('pgNext').onclick=function(){ var pages=Math.ceil(currentDataset().length/PAGE_SIZE); if(CURRENT_PAGE<pages){CURRENT_PAGE++;renderResults();} };
+      $('pgLast').onclick=function(){ CURRENT_PAGE=Math.ceil(currentDataset().length/PAGE_SIZE); renderResults(); };
+    }
+
+    function actionButtons(item, href){
+      var favBtn = '<button class="btn-ghost" data-act="fav" data-id="'+item.id+'" title="Adicionar aos favoritos">☆ Favoritar</button>';
+      var openBtn = '<a class="btn" href="'+href+'" target="_blank" rel="noopener">Abrir artigo</a>';
+      var pdfBtn  = '<button class="btn-solid" data-pdf="'+(item.pdf||'')+'" title="PDF">PDF</button>';
+      return favBtn + ' ' + openBtn + ' ' + pdfBtn;
+    }
+
+    function renderCard(item){
+      var href=item.url?item.url:(item.doi?('https://doi.org/'+item.doi):'#');
+      var chips='';
+      if(item.type) chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+item.type+'</span>';
+      if(item.method) chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+item.method+'</span>';
+      if(item.population){ var label={crianca:'Criança',adolescente:'Adolescente',jovem:'Jovem',adulto:'Adulto',idoso:'Idoso'}[item.population]||item.population; chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+label+'</span>'; }
+      if(item.language) chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+String(item.language).toUpperCase()+'</span>';
+      if(item.oa) chips+='<span class="inline-flex items-center rounded-full border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs text-emerald-700">Open Access</span>';
+      if(typeof item.score==='number') chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">Score: '+item.score.toFixed(1)+'</span>';
+      return '<div class="rounded-3xl border border-gray-100 bg-white/70 p-5">'+
+          '<a href="'+href+'" target="_blank" class="group inline-flex items-start gap-2"><h3 class="text-base font-semibold leading-snug text-gray-800 group-hover:text-indigo-400">'+(item.title||'(sem título)')+'</h3><span class="text-gray-400">↗</span></a>'+
+          '<div class="text-sm text-gray-600">'+(item.authors||[]).join(', ')+' • '+(item.journal||'')+' • '+(item.year||'')+'</div>'+
+          '<div class="flex flex-wrap gap-2 text-xs mt-2">'+chips+'</div>'+
+          '<div class="mt-3 flex items-center gap-2">'+actionButtons(item, href)+'</div>'+
+          '<div class="mt-2 text-xs text-gray-500">Fonte: '+((item.sources||[]).join(', ') || '—')+' • DOI: '+(item.doi || '—')+'</div>'+
+        '</div>';
+    }
+
+    function currentDataset(){
+      return favOnlyEl.checked ? loadFavs() : LAST_RESULTS;
+    }
+
+    function renderResults(){
+      var data = currentDataset();
+      var total=data.length;
+      renderPagination(total,CURRENT_PAGE,PAGE_SIZE);
+      var start=(CURRENT_PAGE-1)*PAGE_SIZE;
+      var pageItems=data.slice(start,start+PAGE_SIZE);
+      resultsEl.innerHTML=pageItems.map(renderCard).join('');
+
+      // Válida PDF nos itens renderizados e atualiza estrelas
+      enhancePdfButtons(resultsEl);
+      updateFavStars();
+    }
 
     function scoreOf(r,y1,y2){ var s=0; if(r.type==='Meta-análise') s+=10; else if(r.type==='Revisão') s+=6; else if(r.type==='Ensaio clínico') s+=4; if(r.oa) s+=2; if(r.doi) s+=1; if(r.abstract && r.abstract.length>120) s+=1; if(r.year){ var span=Math.max(1,(y2-y1+1)); var norm=Math.min(1,Math.max(0,(r.year-y1)/span)); s+=3*norm; } if((r.sources||[]).indexOf('PubMed')>=0) s+=1; if((r.sources||[]).indexOf('DOAJ')>=0) s+=0.5; return s; }
     function sortResults(arr,y1,y2,mode){ var a=arr.slice(); if(mode==='newest'){ a.sort(function(x,y){return (y.year||0)-(x.year||0);}); } else if(mode==='oldest'){ a.sort(function(x,y){return (x.year||0)-(y.year||0);}); } else if(mode==='title'){ a.sort(function(x,y){return String(x.title||'').localeCompare(String(y.title||''));}); } else { a.forEach(function(r){ r.score=scoreOf(r,y1,y2); }); a.sort(function(x,y){return (y.score||0)-(x.score||0);}); } return a; }
 
-    function renderPagination(total,page,pageSize){ var pages=Math.max(1,Math.ceil(total/pageSize)); if(pages<=1){ paginationEl.innerHTML=''; return; } var disablePrev=page<=1; var disableNext=page>=pages; paginationEl.innerHTML=''+'<button id="pgFirst" class="rounded-2xl border border-gray-200 px-3 py-1 text-sm bg-white" '+(disablePrev?'disabled':'')+'>« Primeiro</button>'+'<button id="pgPrev" class="rounded-2xl border border-gray-200 px-3 py-1 text-sm bg-white" '+(disablePrev?'disabled':'')+'>‹ Anterior</button>'+'<span class="text-sm text-gray-700">Página '+page+' de '+pages+'</span>'+'<button id="pgNext" class="rounded-2xl border border-gray-200 px-3 py-1 text-sm bg-white" '+(disableNext?'disabled':'')+'>Próxima ›</button>'+'<button id="pgLast" class="rounded-2xl border border-gray-200 px-3 py-1 text-sm bg-white" '+(disableNext?'disabled':'')+'>Última »</button>'; $('pgFirst').onclick=function(){CURRENT_PAGE=1;renderResults();}; $('pgPrev').onclick=function(){ if(CURRENT_PAGE>1){CURRENT_PAGE--;renderResults();} }; $('pgNext').onclick=function(){ var pages=Math.ceil(LAST_RESULTS.length/PAGE_SIZE); if(CURRENT_PAGE<pages){CURRENT_PAGE++;renderResults();} }; $('pgLast').onclick=function(){ CURRENT_PAGE=Math.ceil(LAST_RESULTS.length/PAGE_SIZE); renderResults(); };
-    }
-
-    function actionButtons(item, href){
-      var openBtn = '<a class="btn" href="'+href+'" target="_blank" rel="noopener">Abrir artigo</a>';
-      var pdfBtn  = '<button class="btn-solid" data-pdf="'+(item.pdf||'')+'" title="PDF">PDF</button>';
-      return openBtn + ' ' + pdfBtn;
-    }
-
-    function renderResults(){
-      var total=LAST_RESULTS.length;
-      renderPagination(total,CURRENT_PAGE,PAGE_SIZE);
-      var start=(CURRENT_PAGE-1)*PAGE_SIZE;
-      var pageItems=LAST_RESULTS.slice(start,start+PAGE_SIZE);
-      resultsEl.innerHTML=pageItems.map(function(item){
-        var href=item.url?item.url:(item.doi?('https://doi.org/'+item.doi):'#');
-        var chips='';
-        if(item.type) chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+item.type+'</span>';
-        if(item.method) chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+item.method+'</span>';
-        if(item.population){ var label={crianca:'Criança',adolescente:'Adolescente',jovem:'Jovem',adulto:'Adulto',idoso:'Idoso'}[item.population]||item.population; chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+label+'</span>'; }
-        if(item.language) chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+String(item.language).toUpperCase()+'</span>';
-        if(item.oa) chips+='<span class="inline-flex items-center rounded-full border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs text-emerald-700">Open Access</span>';
-        if(typeof item.score==='number') chips+='<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">Score: '+item.score.toFixed(1)+'</span>';
-
-        return '<div class="rounded-3xl border border-gray-100 bg-white/70 p-5">'+
-            '<a href="'+href+'" target="_blank" class="group inline-flex items-start gap-2"><h3 class="text-base font-semibold leading-snug text-gray-800 group-hover:text-indigo-400">'+(item.title||'(sem título)')+'</h3><span class="text-gray-400">↗</span></a>'+
-            '<div class="text-sm text-gray-600">'+(item.authors||[]).join(', ')+' • '+(item.journal||'')+' • '+(item.year||'')+'</div>'+
-            '<div class="flex flex-wrap gap-2 text-xs mt-2">'+chips+'</div>'+
-            '<div class="mt-3 flex items-center gap-2">'+actionButtons(item, href)+'</div>'+
-            '<div class="mt-2 text-xs text-gray-500">Fonte: '+((item.sources||[]).join(', ') || '—')+' • DOI: '+(item.doi || '—')+'</div>'+
-          '</div>';
-      }).join('');
-
-      // Após render, validar botões PDF na página atual
-      enhancePdfButtons(resultsEl);
-    }
-
     function readLangSet(){ var c=document.querySelectorAll('.lang:checked'); var s={}; for(var i=0;i<c.length;i++) s[String(c[i].value).toLowerCase()]=true; return s; }
+
+    function writeParams(){
+      var p = new URLSearchParams(location.search);
+      p.set('q', $('q').value || '');
+      p.set('y1', $('yearFrom').value || '2019');
+      p.set('y2', $('yearTo').value || '2025');
+      p.set('ord', orderByEl.value);
+      p.set('fav', favOnlyEl.checked ? '1' : '0');
+      var pops = Array.from(document.querySelectorAll('.pop:checked')).map(function(el){return el.value;}).join(',');
+      p.set('pops', pops);
+      history.replaceState(null, '', '?' + p.toString());
+    }
 
     function search(){
       writeParams();
@@ -431,18 +524,38 @@
       });
     }
 
+    // Delegação para botão de favorito nos cards
+    resultsEl.addEventListener('click', function(e){
+      var btn = e.target.closest && e.target.closest('button[data-act="fav"]');
+      if(!btn) return;
+      var id = btn.getAttribute('data-id');
+      toggleFavById(id);
+    });
+
     document.getElementById('btnSearch').addEventListener('click', search);
     var searchDebounced = debounce(search, 350);
     qEl.addEventListener('input', searchDebounced);
     yearFromEl.addEventListener('change', search);
     yearToEl.addEventListener('change', search);
     oaOnlyEl.addEventListener('change', search);
+    favOnlyEl.addEventListener('change', function(){ writeParams(); CURRENT_PAGE=1; renderResults(); });
     document.getElementById('popFilters').addEventListener('change', search);
     document.getElementById('btnPopAll').addEventListener('click', function(){ var boxes=Array.from(document.querySelectorAll('.pop')); var allChecked=boxes.every(function(b){return b.checked;}); boxes.forEach(function(b){ b.checked=!allChecked; }); search(); });
     orderByEl.addEventListener('change', function(){ writeParams(); var y1=Number(yearFromEl.value)||2019; var y2=Number(yearToEl.value)||2025; LAST_RESULTS=sortResults(LAST_RESULTS,y1,y2,orderByEl.value); CURRENT_PAGE=1; renderResults(); });
 
-    (function(){ var p=new URLSearchParams(location.search); if(p.get('q')) $('q').value=p.get('q'); if(p.get('y1')) $('yearFrom').value=p.get('y1'); if(p.get('y2')) $('yearTo').value=p.get('y2'); var order=p.get('ord'); if(order) orderByEl.value=order; var pops=p.get('pops'); if(pops){ var set={}; pops.split(',').forEach(function(x){set[x]=true;}); document.querySelectorAll('.pop').forEach(function(el){ el.checked=!!set[el.value]; }); } })();
+    // Sincroniza parâmetros da URL (inclui favOnly)
+    (function(){
+      var p=new URLSearchParams(location.search);
+      if(p.get('q')) $('q').value=p.get('q');
+      if(p.get('y1')) $('yearFrom').value=p.get('y1');
+      if(p.get('y2')) $('yearTo').value=p.get('y2');
+      var order=p.get('ord'); if(order) orderByEl.value=order;
+      var fav=p.get('fav'); if(fav==='1') favOnlyEl.checked=true;
+      var pops=p.get('pops');
+      if(pops){ var set={}; pops.split(',').forEach(function(x){set[x]=true;}); document.querySelectorAll('.pop').forEach(function(el){ el.checked=!!set[el.value]; }); }
+    })();
 
+    renderSaved();
     if ((qEl.value||'').trim()) search();
     setHealth(h_crossref, true, 'JS carregou');
   })();
