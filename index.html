@@ -4,25 +4,37 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PsiSearch • Psicologia</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <meta name="description" content="Busca em tempo real por artigos científicos (Psicologia)">
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50">
+    <!-- Topbar -->
     <header class="sticky top-0 z-10 backdrop-blur bg-white/60 border-b border-gray-100">
       <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow">Ψ</div>
           <div class="leading-tight">
             <div class="text-sm font-semibold text-gray-900">PsiSearch</div>
-            <div class="text-[11px] text-gray-500">Busca em tempo real (Crossref)</div>
+            <div class="text-[11px] text-gray-500">Busca em tempo real (Crossref + PubMed + DOAJ)</div>
           </div>
         </div>
-        <a href="https://github.com/" target="_blank" class="text-xs text-gray-500 hover:text-gray-700">GitHub</a>
+        <a href="https://github.com/thedax-bi/psi-search" target="_blank" class="text-xs text-gray-500 hover:text-gray-700">GitHub</a>
+      </div>
+      <!-- Health bar -->
+      <div id="healthBar" class="mx-auto max-w-6xl px-4 pb-3 -mt-2">
+        <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between gap-2">
+          <div>
+            <span class="font-medium">Agregador:</span>
+            <span id="aggUrl" class="font-mono text-[11px] align-middle"></span>
+          </div>
+          <div id="health" class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">checando…</div>
+        </div>
       </div>
     </header>
 
+    <!-- Main -->
     <main class="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Filtros -->
+      <!-- Sidebar -->
       <aside class="lg:col-span-3 space-y-4">
         <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
           <div class="mb-2 text-sm font-medium text-gray-700">Filtros</div>
@@ -58,7 +70,7 @@
         </div>
       </aside>
 
-      <!-- Busca + resultados -->
+      <!-- Search + results -->
       <section class="lg:col-span-9 space-y-4">
         <div class="rounded-3xl border border-gray-100 bg-white/70 overflow-hidden">
           <div class="flex items-center gap-2 p-4">
@@ -69,7 +81,7 @@
             <button id="btnSearch" class="rounded-2xl bg-indigo-600 text-white px-4 py-2 text-sm">Buscar</button>
           </div>
           <div class="border-t border-gray-100 px-4 py-2 text-xs text-gray-600">
-            Fonte: Crossref (tempo real via Worker)
+            Fonte: Crossref + PubMed + DOAJ (tempo real via Worker)
           </div>
         </div>
 
@@ -79,11 +91,11 @@
 
     <footer class="mx-auto max-w-6xl px-4 pb-10 text-xs text-gray-500">
       <div class="rounded-3xl bg-white/60 p-4 border border-gray-100">
-        Preview • v0.2 (tempo real) • Resultados e OA aproximados
+        Preview • v0.3 (tempo real) • Mensagens de erro detalhadas
       </div>
     </footer>
 
-    <script type="module" src="./config.js"></script>
-    <script type="module" src="./app.js"></script>
+    <script type="module" src="./config.js?v=3b"></script>
+    <script type="module" src="./app.js?v=3b"></script>
   </body>
 </html>

@@ -7,8 +7,12 @@ const oaOnlyEl = document.getElementById('oaOnly');
 const resultsEl = document.getElementById('results');
 const savedListEl = document.getElementById('savedList');
 const btnSearch = document.getElementById('btnSearch');
+const healthEl = document.getElementById('health');
+const aggUrlEl = document.getElementById('aggUrl');
 
 const STORAGE_KEY = 'psisearch_saved_v1';
+
+aggUrlEl.textContent = AGGREGATOR_BASE;
 
 function loadSaved() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
@@ -72,6 +76,24 @@ function langFilters(){
   return Array.from(document.querySelectorAll('.lang:checked')).map(el=>el.value);
 }
 
+// Health check
+async function healthCheck() {
+  try{
+    const r = await fetch(`${AGGREGATOR_BASE}/health`, { cache: 'no-store' });
+    if (r.ok) {
+      healthEl.textContent = 'online';
+      healthEl.className = 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700';
+    } else {
+      healthEl.textContent = `HTTP ${r.status}`;
+      healthEl.className = 'px-2 py-0.5 rounded-full bg-amber-100 text-amber-700';
+    }
+  } catch (e) {
+    healthEl.textContent = 'offline';
+    healthEl.className = 'px-2 py-0.5 rounded-full bg-red-100 text-red-700';
+  }
+}
+healthCheck();
+
 async function search(){
   const q = (qEl.value || '').trim();
   const year_from = Number(yearFromEl.value) || 2019;
@@ -87,9 +109,14 @@ async function search(){
     url.searchParams.set('year_from', year_from);
     url.searchParams.set('year_to', year_to);
     url.searchParams.set('oa', oa);
+    url.searchParams.set('sources', 'crossref,pubmed,doaj');
     if(langs.length) url.searchParams.set('lang', langs.join(','));
 
-    const resp = await fetch(url.toString());
+    const resp = await fetch(url.toString(), { cache: 'no-store' });
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(`HTTP ${resp.status} — ${text.slice(0, 300)}`);
+    }
     const data = await resp.json();
 
     const saved = loadSaved();
@@ -107,7 +134,16 @@ async function search(){
       return;
     }
 
-    resultsEl.innerHTML = filtered.map(item => {
+    // Facets summary (opcional)
+    const facets = data.facets || {};
+    const facetSummary = Object.keys(facets).length
+      ? `<div class="rounded-2xl border border-gray-100 bg-white/60 p-3 text-xs text-gray-600">
+           <span class="font-medium">Facetas:</span>
+           ${Object.entries(facets).map(([k,v]) => `${k}(${Object.keys(v).length})`).join(' · ')}
+         </div>`
+      : '';
+
+    resultsEl.innerHTML = facetSummary + filtered.map(item => {
       const isSaved = saved.some(s => s.id === item.id);
       return `
         <div class="rounded-3xl border border-gray-100 bg-white/70 p-5">
@@ -120,6 +156,8 @@ async function search(){
               <div class="text-sm text-gray-600">${(item.authors || []).join(', ')} • ${item.journal || ''} • ${item.year || ''}</div>
               <div class="flex flex-wrap gap-2 text-xs">
                 ${item.type ? `<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">${item.type}</span>`: ''}
+                ${item.method ? `<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">${item.method}</span>`: ''}
+                ${item.population ? `<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">${item.population}</span>`: ''}
                 ${item.language ? `<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">${String(item.language).toUpperCase()}</span>`: ''}
                 ${item.oa ? `<span class="inline-flex items-center rounded-full border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs text-emerald-700">Open Access</span>`: ''}
               </div>
@@ -157,7 +195,7 @@ async function search(){
 
   }catch(err){
     console.error(err);
-    resultsEl.innerHTML = `<div class="rounded-3xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">Erro ao buscar. Verifique a URL do agregador em <code>config.js</code>.</div>`;
+    resultsEl.innerHTML = `<div class="rounded-3xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">Erro ao buscar: ${String(err.message || err).replace(/</g,'&lt;')}</div>`;
   }
 }
 
