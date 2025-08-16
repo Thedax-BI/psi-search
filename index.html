@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PsiSearch • GitHub-only (single file)</title>
+  <title>PsiSearch • GitHub-only (single file, upgrades)</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50">
@@ -17,7 +17,7 @@
           <div class="text-[11px] text-gray-500">GitHub-only (single file)</div>
         </div>
       </div>
-      <a href="#" class="text-xs text-gray-500 hover:text-gray-700">single.html</a>
+      <div class="text-xs text-gray-500">v0.5 • CSV • URL • Filtros de público</div>
     </div>
     <div class="mx-auto max-w-6xl px-4 pb-3 -mt-2 grid grid-cols-3 gap-2">
       <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
@@ -37,31 +37,55 @@
 
   <main class="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
     <aside class="lg:col-span-3 space-y-4">
-      <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
-        <div class="mb-2 text-sm font-medium text-gray-700">Filtros</div>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-xs text-gray-600 mb-1">Período (ano)</label>
-            <div class="flex items-center gap-3">
-              <input id="yearFrom" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2019" />
-              <span class="text-xs text-gray-500">—</span>
-              <input id="yearTo" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2025" />
-            </div>
-          </div>
+      <div class="rounded-3xl border border-gray-100 bg-white/70 p-4 space-y-4">
+        <div>
+          <div class="mb-2 text-sm font-medium text-gray-700">Consulta</div>
           <div class="flex items-center gap-2">
-            <input id="oaOnly" type="checkbox" class="rounded border-gray-300" />
-            <label for="oaOnly" class="text-sm text-gray-700">Apenas Open Access (aprox.)</label>
+            <input id="q" placeholder="Ex.: burnout enfermeiros (mindfulness OR TCC)" class="flex-1 rounded-2xl border border-gray-200 bg-white/70 px-3 py-2 text-sm" />
+            <button id="btnSearch" class="rounded-2xl bg-indigo-600 text-white px-4 py-2 text-sm">Buscar</button>
           </div>
-          <div>
-            <div class="text-xs text-gray-600 mb-1">Idioma (filtragem local)</div>
-            <div class="flex flex-wrap gap-2 text-sm">
-              <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="en" checked> EN</label>
-              <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="pt" checked> PT</label>
-              <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="es" checked> ES</label>
-            </div>
+          <div class="mt-2 flex items-center gap-2">
+            <button id="btnCSV" class="rounded-2xl bg-white text-gray-700 border border-gray-200 px-3 py-1.5 text-xs">Exportar CSV</button>
+            <span class="text-[11px] text-gray-500">Compartilhe filtros pela URL automaticamente.</span>
           </div>
         </div>
+
+        <div>
+          <div class="mb-2 text-sm font-medium text-gray-700">Período (ano)</div>
+          <div class="flex items-center gap-3">
+            <input id="yearFrom" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2019" />
+            <span class="text-xs text-gray-500">—</span>
+            <input id="yearTo" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2025" />
+          </div>
+          <label class="mt-3 flex items-center gap-2 text-sm text-gray-700">
+            <input id="oaOnly" type="checkbox" class="rounded border-gray-300" />
+            Apenas Open Access (aprox.)
+          </label>
+        </div>
+
+        <div>
+          <div class="mb-2 text-sm font-medium text-gray-700">Idioma (filtragem local)</div>
+          <div class="flex flex-wrap gap-2 text-sm">
+            <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="en" checked> EN</label>
+            <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="pt" checked> PT</label>
+            <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="es" checked> ES</label>
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-2 text-sm font-medium text-gray-700">Público-alvo</div>
+          <div class="flex flex-wrap gap-2 text-sm" id="popFilters">
+            <label class="flex items-center gap-1"><input type="checkbox" class="pop" value="crianca" checked> Criança</label>
+            <label class="flex items-center gap-1"><input type="checkbox" class="pop" value="adolescente" checked> Adolescente</label>
+            <label class="flex items-center gap-1"><input type="checkbox" class="pop" value="jovem" checked> Jovem</label>
+            <label class="flex items-center gap-1"><input type="checkbox" class="pop" value="adulto" checked> Adulto</label>
+            <label class="flex items-center gap-1"><input type="checkbox" class="pop" value="idoso" checked> Idoso</label>
+          </div>
+          <button id="btnPopAll" class="mt-2 rounded-2xl bg-white text-gray-700 border border-gray-200 px-3 py-1.5 text-xs">Selecionar/Desmarcar todos</button>
+          <div class="mt-1 text-[11px] text-gray-500">Filtro local, não altera a busca nas fontes.</div>
+        </div>
       </div>
+
       <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
         <div class="text-sm font-medium text-gray-700 mb-2">Itens salvos</div>
         <div id="savedList" class="space-y-3 text-sm text-gray-700"></div>
@@ -69,25 +93,14 @@
     </aside>
 
     <section class="lg:col-span-9 space-y-4">
-      <div class="rounded-3xl border border-gray-100 bg-white/70 overflow-hidden">
-        <div class="flex items-center gap-2 p-4">
-          <div class="flex-1 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/70 px-3 py-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input id="q" placeholder="Ex.: burnout enfermeiros (mindfulness OR TCC)" class="flex-1 border-0 bg-transparent focus:outline-none text-sm" />
-          </div>
-          <button id="btnSearch" class="rounded-2xl bg-indigo-600 text-white px-4 py-2 text-sm">Buscar</button>
-        </div>
-        <div class="border-t border-gray-100 px-4 py-2 text-xs text-gray-600">
-          Single-file: chamadas diretas às APIs (sem backend).
-        </div>
-      </div>
+      <div id="resultsHeader"></div>
       <div id="results" class="space-y-4"></div>
     </section>
   </main>
 
   <footer class="mx-auto max-w-6xl px-4 pb-10 text-xs text-gray-500">
     <div class="rounded-3xl bg-white/60 p-4 border border-gray-100">
-      Preview • v0.4 (single-file) • Sem proxy/worker
+      Preview • v0.5 (single-file upgrades)
     </div>
   </footer>
 
@@ -96,12 +109,17 @@
     function $(id){ return document.getElementById(id); }
     var h_crossref = $('h_crossref'), h_pubmed = $('h_pubmed'), h_doaj = $('h_doaj');
     var resultsEl = $('results'), qEl=$('q'), yearFromEl=$('yearFrom'), yearToEl=$('yearTo'), oaOnlyEl=$('oaOnly');
+    var resultsHeader = $('resultsHeader');
+    var savedListEl = $('savedList');
+    var LAST_RESULTS = [];
 
+    // --- tiny helpers ---
     function setHealth(el, ok, label){
       if(!el) return;
       if(ok){ el.textContent = label || 'online'; el.className = 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700'; }
       else  { el.textContent = label || 'offline'; el.className = 'px-2 py-0.5 rounded-full bg-red-100 text-red-700'; }
     }
+    function debounce(fn, ms){ var t; return function(){ var args=arguments; clearTimeout(t); t=setTimeout(function(){ fn.apply(null,args); }, ms);} }
 
     // Health
     fetch('https://api.crossref.org/works?rows=0').then(function(r){ setHealth(h_crossref, r.ok, r.ok?'online':'HTTP '+r.status); }).catch(function(){ setHealth(h_crossref,false); });
@@ -109,14 +127,32 @@
     fetch('https://doaj.org/api/v2/search/articles/test?pageSize=1').then(function(r){ setHealth(h_doaj, r.ok, r.ok?'online':'HTTP '+r.status); }).catch(function(){ setHealth(h_doaj,false); });
 
     function cleanAbstract(a){ return String(a||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); }
+    function normalizeTitle(s){ return String(s||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+
+    // --- Classification: extend with população (sem alterar fetchers) ---
     function classify(r){
-      var t = ((r.title||'') + ' ' + (r.abstract||'')).toLowerCase();
+      var t = ((r.title||'') + ' ' + (r.abstract||'') + ' ' + (r.type||'')).toLowerCase();
+
+      // tipo (mesmo de antes)
       if (/meta[- ]?analys|meta[- ]?an[aá]lise/.test(t)) r.type = "Meta-análise";
-      else if (/systematic review|revis[aã]o sistem[aá]tica|review\b/.test(t)) r.type = "Revisão";
+      else if (/systematic review|revis[aã]o sistem[aá]tica|\breview\b/.test(t)) r.type = "Revisão";
       else if (/randomi[sz]ed|ensaio|controlled trial|clinical trial/.test(t)) r.type = "Ensaio clínico";
+
+      // método (opcional, não interfere)
+      if (/qualitative|qualitativ[oa]/.test(t)) r.method = r.method || "Qualitativo";
+      else if (/randomi[sz]ed|trial|quantitativ[oa]|meta-analys/.test(t)) r.method = r.method || "Quantitativo";
+      else if (/mixed methods|m[eé]todos mistos|misto/.test(t)) r.method = r.method || "Misto";
+
+      // público-alvo (NOVO campo derivado, não altera busca)
+      if (/(\bchild(ren)?\b|infant|pediatric|crian[cç]a|infantil|pediatri)/.test(t)) r.population = "crianca";
+      else if (/(adolescen|\bteen(ager)?s?\b|juvenil|youths?)/.test(t)) r.population = "adolescente";
+      else if (/(\byoung adult(s)?\b|\bjovens?\b|juventude)/.test(t)) r.population = "jovem";
+      else if (/(\badult(s)?\b|adulto[s]?)/.test(t)) r.population = "adulto";
+      else if (/(older adult(s)?|elderly|aging|\baged\b|idoso[s]?)/.test(t)) r.population = "idoso";
+
       return r;
     }
-    function normalizeTitle(s){ return String(s||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+
     function dedup(items){
       var byKey = {}; items.forEach(function(r){
         var key = (r.doi||'').toLowerCase() || (normalizeTitle(r.title)+'|'+(r.year||''));
@@ -127,12 +163,14 @@
             id: prev.id||r.id, title:prev.title||r.title, authors:prev.authors&&prev.authors.length?prev.authors:r.authors,
             year:prev.year||r.year, journal:prev.journal||r.journal, doi:prev.doi||r.doi,
             abstract:prev.abstract||r.abstract, oa:prev.oa||r.oa, language:prev.language||r.language,
-            url:prev.url||r.url, sources:Array.from(new Set([].concat(prev.sources||[], r.sources||[])))
+            url:prev.url||r.url, type: prev.type||r.type, method: prev.method||r.method, population: prev.population||r.population,
+            sources:Array.from(new Set([].concat(prev.sources||[], r.sources||[])))
           };
         }
       }); return Object.keys(byKey).map(function(k){return byKey[k];});
     }
 
+    // --- Fetchers (inalterados) ---
     function fetchCrossref(q,y1,y2){
       var params=new URLSearchParams(); if(q) params.set('query',q); params.set('rows','20'); params.set('filter','from-pub-date:'+y1+'-01-01,until-pub-date:'+y2+'-12-31,type:journal-article');
       return fetch('https://api.crossref.org/works?'+params.toString())
@@ -175,29 +213,141 @@
         });});
     }
 
+    // --- Saved list ---
+    var STORAGE_KEY='psisearch_saved_v1';
+    function loadSaved(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e){ return []; } }
+    function saveSaved(items){ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+    function bibtex(item){
+      var authors=(item.authors||[]).join(' and ');
+      var key = ( (item.authors && item.authors[0] && item.authors[0].split(' ')[0]) || 'ref' ).toLowerCase() + (item.year || '');
+      return '@article{' + key + ',\n  title={' + (item.title||'') + '},\n  author={' + authors + '},\n  journal={' + (item.journal||'') + '},\n  year={' + (item.year||'') + '},\n  doi={' + (item.doi||'') + '}\n}';
+    }
+    function renderSaved(){
+      var saved = loadSaved();
+      if(saved.length===0){ savedListEl.innerHTML='<div class="text-gray-500">Nada salvo ainda.</div>'; return; }
+      savedListEl.innerHTML = saved.map(function(s){
+        return '<div class="flex items-start justify-between gap-3">'+
+          '<div><div class="text-sm font-medium text-gray-800 line-clamp-2">'+(s.title||'')+'</div>'+
+          '<div class="text-xs text-gray-500">'+(((s.authors||[])[0])||'')+' et al., '+(s.year||'')+'</div></div>'+
+          '<div class="flex gap-2">'+
+            '<button class="rounded-2xl border border-gray-200 px-3 py-1 text-xs" data-action="copy" data-id="'+s.id+'">BibTeX</button>'+
+            '<button class="rounded-2xl border border-gray-200 px-3 py-1 text-xs" data-action="remove" data-id="'+s.id+'">Remover</button>'+
+          '</div></div>';
+      }).join('');
+    }
+    savedListEl.addEventListener('click', function(e){
+      var btn = e.target.closest ? e.target.closest('button') : e.target;
+      if(!btn || btn.tagName!=='BUTTON') return;
+      var id = btn.getAttribute('data-id');
+      var action = btn.getAttribute('data-action');
+      var saved = loadSaved();
+      var item = saved.find(function(x){ return x.id===id; });
+      if(!item) return;
+      if(action==='copy'){ navigator.clipboard.writeText(bibtex(item)); btn.textContent='Copiado!'; setTimeout(function(){btn.textContent='BibTeX';},1200); }
+      if(action==='remove'){ saveSaved(saved.filter(function(x){return x.id!==id;})); renderSaved(); }
+    });
+
+    // --- URL params ---
+    function readParams(){
+      var p = new URLSearchParams(location.search);
+      if (p.get('q')) $('q').value = p.get('q');
+      if (p.get('y1')) $('yearFrom').value = p.get('y1');
+      if (p.get('y2')) $('yearTo').value = p.get('y2');
+      // público (pops=crianca,adulto,...)
+      var pops = p.get('pops');
+      if (pops){
+        var set = {}; pops.split(',').forEach(function(x){ set[x]=true; });
+        document.querySelectorAll('.pop').forEach(function(el){ el.checked = !!set[el.value]; });
+      }
+    }
+    function writeParams(){
+      var p = new URLSearchParams(location.search);
+      p.set('q', $('q').value || '');
+      p.set('y1', $('yearFrom').value || '2019');
+      p.set('y2', $('yearTo').value || '2025');
+      var pops = Array.from(document.querySelectorAll('.pop:checked')).map(function(el){return el.value;}).join(',');
+      p.set('pops', pops);
+      history.replaceState(null, '', '?' + p.toString());
+    }
+
+    // --- CSV export ---
+    function exportCSV(rows){
+      if(!rows || !rows.length){ alert('Nada para exportar'); return; }
+      var header = ['title','authors','journal','year','doi','url','language','population','sources'];
+      var csv = [header.join(',')].concat(rows.map(function(r){
+        var cols = [
+          (r.title||'').replace(/"/g,'""'),
+          (r.authors||[]).join('; ').replace(/"/g,'""'),
+          (r.journal||'').replace(/"/g,'""'),
+          r.year||'',
+          r.doi||'',
+          r.url||'',
+          r.language||'',
+          r.population||'',
+          (r.sources||[]).join('; ')
+        ].map(function(v){ return '"' + v + '"'; }).join(',');
+        return cols;
+      })).join('\n');
+      var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'psisearch_resultados.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // --- Search orchestration (mantendo lógica anterior) ---
     function search(){
-      var q=(qEl.value||'').trim(); var y1=Number(yearFromEl.value)||2019; var y2=Number(yearToEl.value)||2025; var langSet = (function(){
-        var c=document.querySelectorAll('.lang:checked'); var s={}; for(var i=0;i<c.length;i++) s[String(c[i].value).toLowerCase()]=true; return s;
-      })(); var oaOnly=oaOnlyEl.checked;
+      writeParams();
+      var q=(qEl.value||'').trim(); var y1=Number(yearFromEl.value)||2019; var y2=Number(yearToEl.value)||2025;
+      var langSet=(function(){ var c=document.querySelectorAll('.lang:checked'); var s={}; for(var i=0;i<c.length;i++) s[String(c[i].value).toLowerCase()]=true; return s; })();
+      var oaOnly=oaOnlyEl.checked;
+      var popSel = Array.from(document.querySelectorAll('.pop:checked')).map(function(el){return el.value;});
+      var usePopFilter = popSel.length>0 && popSel.length<5; // se todos marcados, não filtra
+
       resultsEl.innerHTML = '<div class="text-sm text-gray-600">Buscando…</div>';
+      resultsHeader.innerHTML = '';
+
       Promise.allSettled([fetchCrossref(q,y1,y2), fetchPubMed(q,y1,y2), fetchDOAJ(q,y1,y2)]).then(function(res){
         var arr=[], errors={};
         if(res[0].status==='fulfilled') arr=arr.concat(res[0].value); else errors.crossref=String(res[0].reason);
         if(res[1].status==='fulfilled') arr=arr.concat(res[1].value); else errors.pubmed=String(res[1].reason);
         if(res[2].status==='fulfilled') arr=arr.concat(res[2].value); else errors.doaj=String(res[2].reason);
-        var merged = dedup(arr).filter(function(r){ return (!oaOnly || !!r.oa) && (!r.language || langSet[String(r.language).toLowerCase()] || Object.keys(langSet).length===0); });
+
+        var merged = dedup(arr).filter(function(r){
+          var byLang = (!r.language || langSet[String(r.language).toLowerCase()] || Object.keys(langSet).length===0);
+          var byOA = (!oaOnly || !!r.oa);
+          var byPop = (!usePopFilter || (r.population && popSel.indexOf(r.population) >= 0));
+          return byLang && byOA && byPop;
+        });
+
+        LAST_RESULTS = merged.slice();
+
         var header = '<div class="rounded-2xl border border-gray-100 bg-white/60 p-3 text-xs text-gray-600 mb-2"><span class="font-medium">Resultados:</span> '+merged.length+(Object.keys(errors).length? ' • <span class="text-red-600">Erros: '+Object.keys(errors).join(', ')+'</span>':'')+'</div>';
-        if(!merged.length){ resultsEl.innerHTML = header + '<div class="rounded-3xl border border-gray-100 bg-white/70 p-6 text-center text-gray-600">Nenhum resultado.</div>'; return; }
-        resultsEl.innerHTML = header + merged.map(function(item){
+        resultsHeader.innerHTML = header;
+
+        if(!merged.length){
+          resultsEl.innerHTML = '<div class="rounded-3xl border border-gray-100 bg-white/70 p-6 text-center text-gray-600">Nenhum resultado.</div>';
+          return;
+        }
+
+        resultsEl.innerHTML = merged.map(function(item){
           var href=item.url?item.url:(item.doi?('https://doi.org/'+item.doi):'#');
+          var chips = '';
+          if(item.type) chips += '<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+item.type+'</span>';
+          if(item.method) chips += '<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+item.method+'</span>';
+          if(item.population){
+            var label = {crianca:'Criança', adolescente:'Adolescente', jovem:'Jovem', adulto:'Adulto', idoso:'Idoso'}[item.population] || item.population;
+            chips += '<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+label+'</span>';
+          }
+          if(item.language) chips += '<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+String(item.language).toUpperCase()+'</span>';
+          if(item.oa) chips += '<span class="inline-flex items-center rounded-full border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs text-emerald-700">Open Access</span>';
+
           return '<div class="rounded-3xl border border-gray-100 bg-white/70 p-5">'+
               '<a href="'+href+'" target="_blank" class="group inline-flex items-start gap-2"><h3 class="text-base font-semibold leading-snug text-gray-800 group-hover:text-indigo-700">'+(item.title||'(sem título)')+'</h3><span class="text-gray-400">↗</span></a>'+
               '<div class="text-sm text-gray-600">'+(item.authors||[]).join(', ')+' • '+(item.journal||'')+' • '+(item.year||'')+'</div>'+
-              '<div class="flex flex-wrap gap-2 text-xs">'+
-                (item.type?'<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+item.type+'</span>':'')+
-                (item.language?'<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+String(item.language).toUpperCase()+'</span>':'')+
-                (item.oa?'<span class="inline-flex items-center rounded-full border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs text-emerald-700">Open Access</span>':'')+
-              '</div>'+
+              '<div class="flex flex-wrap gap-2 text-xs mt-2">'+chips+'</div>'+
+              '<div class="mt-2 text-xs text-gray-500">Fonte: '+((item.sources||[]).join(', ') || '—')+' • DOI: '+(item.doi || '—')+'</div>'+
             '</div>';
         }).join('');
       }).catch(function(err){
@@ -205,10 +355,29 @@
       });
     }
 
+    // --- Events ---
     document.getElementById('btnSearch').addEventListener('click', search);
-    qEl.addEventListener('keydown', function(e){ if(e.key==='Enter') search(); });
+    document.getElementById('btnCSV').addEventListener('click', function(){ exportCSV(LAST_RESULTS); });
+    var searchDebounced = debounce(search, 350);
+    qEl.addEventListener('input', searchDebounced);
+    yearFromEl.addEventListener('change', search);
+    yearToEl.addEventListener('change', search);
+    oaOnlyEl.addEventListener('change', search);
+    document.getElementById('popFilters').addEventListener('change', search);
+    document.getElementById('btnPopAll').addEventListener('click', function(){
+      var boxes = Array.from(document.querySelectorAll('.pop'));
+      var allChecked = boxes.every(function(b){return b.checked;});
+      boxes.forEach(function(b){ b.checked = !allChecked; });
+      search();
+    });
 
-    // self-test that JS ran
+    // URL params in
+    readParams();
+
+    // initial render does nothing until user searches or types; optional auto-search if q preset:
+    if ((qEl.value||'').trim()) search();
+
+    // JS online marker
     setHealth(h_crossref, true, 'JS carregou');
   })();
   </script>
