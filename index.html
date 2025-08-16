@@ -1,105 +1,216 @@
+
 <!doctype html>
 <html lang="pt-br">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>PsiSearch • Psicologia</title>
-    <meta name="description" content="Busca em tempo real por artigos científicos (Psicologia) — GitHub-only">
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50">
-    <!-- Topbar -->
-    <header class="sticky top-0 z-10 backdrop-blur bg-white/60 border-b border-gray-100">
-      <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow">Ψ</div>
-          <div class="leading-tight">
-            <div class="text-sm font-semibold text-gray-900">PsiSearch</div>
-            <div class="text-[11px] text-gray-500">GitHub-only • Crossref + PubMed + DOAJ (direct)</div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PsiSearch • GitHub-only (single file)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50">
+  <header class="sticky top-0 z-10 backdrop-blur bg-white/60 border-b border-gray-100">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow">Ψ</div>
+        <div class="leading-tight">
+          <div class="text-sm font-semibold text-gray-900">PsiSearch</div>
+          <div class="text-[11px] text-gray-500">GitHub-only (single file)</div>
+        </div>
+      </div>
+      <a href="#" class="text-xs text-gray-500 hover:text-gray-700">single.html</a>
+    </div>
+    <div class="mx-auto max-w-6xl px-4 pb-3 -mt-2 grid grid-cols-3 gap-2">
+      <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
+        <span>Crossref</span><span id="h_crossref" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
+      </div>
+      <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
+        <span>PubMed</span><span id="h_pubmed" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
+      </div>
+      <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
+        <span>DOAJ</span><span id="h_doaj" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
+      </div>
+    </div>
+    <div id="errbar" class="mx-auto max-w-6xl px-4 hidden">
+      <div class="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-700" id="errmsg"></div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <aside class="lg:col-span-3 space-y-4">
+      <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
+        <div class="mb-2 text-sm font-medium text-gray-700">Filtros</div>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">Período (ano)</label>
+            <div class="flex items-center gap-3">
+              <input id="yearFrom" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2019" />
+              <span class="text-xs text-gray-500">—</span>
+              <input id="yearTo" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2025" />
+            </div>
           </div>
-        </div>
-        <a href="https://github.com/thedax-bi/psi-search" target="_blank" class="text-xs text-gray-500 hover:text-gray-700">GitHub</a>
-      </div>
-      <!-- Source health -->
-      <div class="mx-auto max-w-6xl px-4 pb-3 -mt-2 grid grid-cols-3 gap-2">
-        <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
-          <span>Crossref</span><span id="h_crossref" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
-        </div>
-        <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
-          <span>PubMed</span><span id="h_pubmed" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
-        </div>
-        <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
-          <span>DOAJ</span><span id="h_doaj" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main -->
-    <main class="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Sidebar -->
-      <aside class="lg:col-span-3 space-y-4">
-        <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
-          <div class="mb-2 text-sm font-medium text-gray-700">Filtros</div>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs text-gray-600 mb-1">Período (ano)</label>
-              <div class="flex items-center gap-3">
-                <input id="yearFrom" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2019" />
-                <span class="text-xs text-gray-500">—</span>
-                <input id="yearTo" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2025" />
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <input id="oaOnly" type="checkbox" class="rounded border-gray-300" />
-              <label for="oaOnly" class="text-sm text-gray-700">Apenas Open Access (aprox.)</label>
-            </div>
-
-            <div>
-              <div class="text-xs text-gray-600 mb-1">Idioma (filtragem local)</div>
-              <div class="flex flex-wrap gap-2 text-sm">
-                <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="en" checked> EN</label>
-                <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="pt" checked> PT</label>
-                <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="es" checked> ES</label>
-              </div>
+          <div class="flex items-center gap-2">
+            <input id="oaOnly" type="checkbox" class="rounded border-gray-300" />
+            <label for="oaOnly" class="text-sm text-gray-700">Apenas Open Access (aprox.)</label>
+          </div>
+          <div>
+            <div class="text-xs text-gray-600 mb-1">Idioma (filtragem local)</div>
+            <div class="flex flex-wrap gap-2 text-sm">
+              <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="en" checked> EN</label>
+              <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="pt" checked> PT</label>
+              <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="es" checked> ES</label>
             </div>
           </div>
         </div>
-
-        <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
-          <div class="text-sm font-medium text-gray-700 mb-2">Itens salvos</div>
-          <div id="savedList" class="space-y-3 text-sm text-gray-700"></div>
-        </div>
-      </aside>
-
-      <!-- Search + results -->
-      <section class="lg:col-span-9 space-y-4">
-        <div class="rounded-3xl border border-gray-100 bg-white/70 overflow-hidden">
-          <div class="flex items-center gap-2 p-4">
-            <div class="flex-1 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/70 px-3 py-2">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input id="q" placeholder="Ex.: burnout enfermeiros (mindfulness OR TCC)" class="flex-1 border-0 bg-transparent focus:outline-none text-sm" />
-            </div>
-            <button id="btnSearch" class="rounded-2xl bg-indigo-600 text-white px-4 py-2 text-sm">Buscar</button>
-          </div>
-          <div class="border-t border-gray-100 px-4 py-2 text-xs text-gray-600">
-            GitHub-only: chamadas diretas às APIs (sem backend).
-          </div>
-        </div>
-
-        <div id="results" class="space-y-4"></div>
-      </section>
-    </main>
-
-    <footer class="mx-auto max-w-6xl px-4 pb-10 text-xs text-gray-500">
-      <div class="rounded-3xl bg-white/60 p-4 border border-gray-100">
-        Preview • v0.4 (GitHub-only) • Sem proxy/worker
       </div>
-      <div class="mt-2 text-[11px] text-gray-500">
-        Observação: PubMed eSearch/eSummary permitem CORS; eFetch (abstract) pode não permitir — o app usa resumo de outras fontes quando disponível.
+      <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
+        <div class="text-sm font-medium text-gray-700 mb-2">Itens salvos</div>
+        <div id="savedList" class="space-y-3 text-sm text-gray-700"></div>
       </div>
-    </footer>
+    </aside>
 
-    <script type="module" src="./app.js?v=github-only"></script>
-  </body>
+    <section class="lg:col-span-9 space-y-4">
+      <div class="rounded-3xl border border-gray-100 bg-white/70 overflow-hidden">
+        <div class="flex items-center gap-2 p-4">
+          <div class="flex-1 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/70 px-3 py-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input id="q" placeholder="Ex.: burnout enfermeiros (mindfulness OR TCC)" class="flex-1 border-0 bg-transparent focus:outline-none text-sm" />
+          </div>
+          <button id="btnSearch" class="rounded-2xl bg-indigo-600 text-white px-4 py-2 text-sm">Buscar</button>
+        </div>
+        <div class="border-t border-gray-100 px-4 py-2 text-xs text-gray-600">
+          Single-file: chamadas diretas às APIs (sem backend).
+        </div>
+      </div>
+      <div id="results" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <footer class="mx-auto max-w-6xl px-4 pb-10 text-xs text-gray-500">
+    <div class="rounded-3xl bg-white/60 p-4 border border-gray-100">
+      Preview • v0.4 (single-file) • Sem proxy/worker
+    </div>
+  </footer>
+
+  <script>
+  (function(){
+    function $(id){ return document.getElementById(id); }
+    var h_crossref = $('h_crossref'), h_pubmed = $('h_pubmed'), h_doaj = $('h_doaj');
+    var resultsEl = $('results'), qEl=$('q'), yearFromEl=$('yearFrom'), yearToEl=$('yearTo'), oaOnlyEl=$('oaOnly');
+
+    function setHealth(el, ok, label){
+      if(!el) return;
+      if(ok){ el.textContent = label || 'online'; el.className = 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700'; }
+      else  { el.textContent = label || 'offline'; el.className = 'px-2 py-0.5 rounded-full bg-red-100 text-red-700'; }
+    }
+
+    // Health
+    fetch('https://api.crossref.org/works?rows=0').then(function(r){ setHealth(h_crossref, r.ok, r.ok?'online':'HTTP '+r.status); }).catch(function(){ setHealth(h_crossref,false); });
+    fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=cancer&retmode=json&retmax=1').then(function(r){ setHealth(h_pubmed, r.ok, r.ok?'online':'HTTP '+r.status); }).catch(function(){ setHealth(h_pubmed,false); });
+    fetch('https://doaj.org/api/v2/search/articles/test?pageSize=1').then(function(r){ setHealth(h_doaj, r.ok, r.ok?'online':'HTTP '+r.status); }).catch(function(){ setHealth(h_doaj,false); });
+
+    function cleanAbstract(a){ return String(a||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); }
+    function classify(r){
+      var t = ((r.title||'') + ' ' + (r.abstract||'')).toLowerCase();
+      if (/meta[- ]?analys|meta[- ]?an[aá]lise/.test(t)) r.type = "Meta-análise";
+      else if (/systematic review|revis[aã]o sistem[aá]tica|review\b/.test(t)) r.type = "Revisão";
+      else if (/randomi[sz]ed|ensaio|controlled trial|clinical trial/.test(t)) r.type = "Ensaio clínico";
+      return r;
+    }
+    function normalizeTitle(s){ return String(s||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+    function dedup(items){
+      var byKey = {}; items.forEach(function(r){
+        var key = (r.doi||'').toLowerCase() || (normalizeTitle(r.title)+'|'+(r.year||''));
+        if(!byKey[key]) byKey[key]=r;
+        else{
+          var prev=byKey[key];
+          byKey[key]={
+            id: prev.id||r.id, title:prev.title||r.title, authors:prev.authors&&prev.authors.length?prev.authors:r.authors,
+            year:prev.year||r.year, journal:prev.journal||r.journal, doi:prev.doi||r.doi,
+            abstract:prev.abstract||r.abstract, oa:prev.oa||r.oa, language:prev.language||r.language,
+            url:prev.url||r.url, sources:Array.from(new Set([].concat(prev.sources||[], r.sources||[])))
+          };
+        }
+      }); return Object.keys(byKey).map(function(k){return byKey[k];});
+    }
+
+    function fetchCrossref(q,y1,y2){
+      var params=new URLSearchParams(); if(q) params.set('query',q); params.set('rows','20'); params.set('filter','from-pub-date:'+y1+'-01-01,until-pub-date:'+y2+'-12-31,type:journal-article');
+      return fetch('https://api.crossref.org/works?'+params.toString())
+        .then(function(r){ if(!r.ok) throw new Error('Crossref HTTP '+r.status); return r.json(); })
+        .then(function(j){ var items=(j&&j.message&&j.message.items)||[]; return items.map(function(it){
+            var doi=it.DOI||null; var title=Array.isArray(it.title)?it.title[0]:(it.title||''); var authors=Array.isArray(it.author)?it.author.map(function(a){return [a.family||'',a.given||''].filter(Boolean).join(', ');}):[];
+            var year=(it.issued&&it.issued['date-parts']&&it.issued['date-parts'][0]&&it.issued['date-parts'][0][0])||null; var journal=Array.isArray(it['container-title'])?it['container-title'][0]:(it['container-title']||'');
+            var abstract=cleanAbstract(it.abstract||''); var oa=Array.isArray(it.link)&&it.link.some(function(l){return String(l['content-type']||'').indexOf('pdf')>=0;}); var language=it.language||null; var url=it.URL||(doi?('https://doi.org/'+doi):null);
+            return classify({ id: doi||('crossref:'+Math.random()), title:title, authors:authors, year:year, journal:journal, doi:doi, abstract:abstract, oa:oa, language:language, url:url, sources:['Crossref'] });
+        });});
+    }
+
+    function fetchPubMed(q,y1,y2){
+      var date='("'+y1+'/01/01"[Date - Publication] : "'+y2+'/12/31"[Date - Publication])'; var term=q? (q+' AND '+date):date;
+      var esURL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=20&sort=relevance&tool=psisearch&email=psisearch@example.com&term='+encodeURIComponent(term);
+      return fetch(esURL).then(function(r){ if(!r.ok) throw new Error('PubMed esearch HTTP '+r.status); return r.json(); })
+        .then(function(js){ var ids=(js&&js.esearchresult&&js.esearchresult.idlist)||[]; if(!ids.length) return [];
+          var idStr=ids.slice(0,20).join(','); var sumURL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&tool=psisearch&email=psisearch@example.com&id='+idStr;
+          return fetch(sumURL).then(function(r){ if(!r.ok) throw new Error('PubMed esummary HTTP '+r.status); return r.json(); })
+            .then(function(ej){ var root=ej&&ej.result||{}; var uids=root.uids||[]; return uids.map(function(uid){ var it=root[uid]; if(!it) return null;
+              var title=it.title||''; var authors=Array.isArray(it.authors)?it.authors.map(function(a){return a.name;}).filter(Boolean):[]; var journal=it.fulljournalname||it.source||'';
+              var m=(it.pubdate||'').match(/(\d{4})/); var year=m?Number(m[1]):null; var doiEntry=Array.isArray(it.articleids)?it.articleids.find(function(a){return a.idtype==='doi';}):null; var doi=doiEntry?doiEntry.value:null;
+              var langArr=Array.isArray(it.lang)?it.lang:[]; var langMap={eng:'en',por:'pt',spa:'es',fra:'fr'}; var language=langMap[langArr[0]]||langArr[0]||null;
+              var url='https://pubmed.ncbi.nlm.nih.gov/'+uid+'/'; return classify({ id: doi||('pubmed:'+uid), title:title, authors:authors, year:year, journal:journal, doi:doi, abstract:'', oa:false, language:language, url:url, sources:['PubMed'] });
+            }).filter(Boolean); });
+        });
+    }
+
+    function fetchDOAJ(q,y1,y2){
+      function esc(s){ return s.replace(/([+\-!(){}\[\]^"~*?:\\/])/g, "\\$1"); }
+      var parts=[]; if(q) parts.push('('+esc(q)+')'); parts.push('bibjson.year:['+y1+' TO '+y2+']'); var query=parts.join(' AND ');
+      var url='https://doaj.org/api/v2/search/articles/'+encodeURIComponent(query)+'?pageSize=20';
+      return fetch(url).then(function(r){ if(!r.ok) throw new Error('DOAJ HTTP '+r.status); return r.json(); })
+        .then(function(j){ var arr=Array.isArray(j&&j.results)?j.results:[]; return arr.map(function(it){ var b=it&&it.bibjson||{};
+          var title=b.title||''; var authors=Array.isArray(b.author)?b.author.map(function(a){return a.name;}).filter(Boolean):[]; var year=Number(b.year)||null;
+          var journal=(b.journal&&b.journal.title)||''; var doiEntry=Array.isArray(b.identifier)?b.identifier.find(function(x){return (x.type||'').toLowerCase()==='doi';}):null; var doi=doiEntry?doiEntry.id:null;
+          var abstract=b.abstract||''; var lang=(b.journal&&b.journal.language&&b.journal.language[0])||b.language||null; var language=Array.isArray(lang)?(lang[0]||null):lang;
+          var link=Array.isArray(b.link)?(((b.link.find(function(l){return (l.type||'').toLowerCase().indexOf('full')>=0;})||{}).url) || (b.link[0]&&b.link[0].url) || null):null;
+          return classify({ id: doi||('doaj:'+it.id), title:title, authors:authors, year:year, journal:journal, doi:doi, abstract:abstract, oa:true, language:language, url:link, sources:['DOAJ'] });
+        });});
+    }
+
+    function search(){
+      var q=(qEl.value||'').trim(); var y1=Number(yearFromEl.value)||2019; var y2=Number(yearToEl.value)||2025; var langSet = (function(){
+        var c=document.querySelectorAll('.lang:checked'); var s={}; for(var i=0;i<c.length;i++) s[String(c[i].value).toLowerCase()]=true; return s;
+      })(); var oaOnly=oaOnlyEl.checked;
+      resultsEl.innerHTML = '<div class="text-sm text-gray-600">Buscando…</div>';
+      Promise.allSettled([fetchCrossref(q,y1,y2), fetchPubMed(q,y1,y2), fetchDOAJ(q,y1,y2)]).then(function(res){
+        var arr=[], errors={};
+        if(res[0].status==='fulfilled') arr=arr.concat(res[0].value); else errors.crossref=String(res[0].reason);
+        if(res[1].status==='fulfilled') arr=arr.concat(res[1].value); else errors.pubmed=String(res[1].reason);
+        if(res[2].status==='fulfilled') arr=arr.concat(res[2].value); else errors.doaj=String(res[2].reason);
+        var merged = dedup(arr).filter(function(r){ return (!oaOnly || !!r.oa) && (!r.language || langSet[String(r.language).toLowerCase()] || Object.keys(langSet).length===0); });
+        var header = '<div class="rounded-2xl border border-gray-100 bg-white/60 p-3 text-xs text-gray-600 mb-2"><span class="font-medium">Resultados:</span> '+merged.length+(Object.keys(errors).length? ' • <span class="text-red-600">Erros: '+Object.keys(errors).join(', ')+'</span>':'')+'</div>';
+        if(!merged.length){ resultsEl.innerHTML = header + '<div class="rounded-3xl border border-gray-100 bg-white/70 p-6 text-center text-gray-600">Nenhum resultado.</div>'; return; }
+        resultsEl.innerHTML = header + merged.map(function(item){
+          var href=item.url?item.url:(item.doi?('https://doi.org/'+item.doi):'#');
+          return '<div class="rounded-3xl border border-gray-100 bg-white/70 p-5">'+
+              '<a href="'+href+'" target="_blank" class="group inline-flex items-start gap-2"><h3 class="text-base font-semibold leading-snug text-gray-800 group-hover:text-indigo-700">'+(item.title||'(sem título)')+'</h3><span class="text-gray-400">↗</span></a>'+
+              '<div class="text-sm text-gray-600">'+(item.authors||[]).join(', ')+' • '+(item.journal||'')+' • '+(item.year||'')+'</div>'+
+              '<div class="flex flex-wrap gap-2 text-xs">'+
+                (item.type?'<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+item.type+'</span>':'')+
+                (item.language?'<span class="inline-flex items-center rounded-full border border-gray-200 bg-white/70 px-2.5 py-1 text-xs text-gray-700">'+String(item.language).toUpperCase()+'</span>':'')+
+                (item.oa?'<span class="inline-flex items-center rounded-full border border-emerald-200 bg-white/70 px-2.5 py-1 text-xs text-emerald-700">Open Access</span>':'')+
+              '</div>'+
+            '</div>';
+        }).join('');
+      }).catch(function(err){
+        resultsEl.innerHTML = '<div class="rounded-3xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">Erro ao buscar: '+String(err && err.message || err)+'</div>';
+      });
+    }
+
+    document.getElementById('btnSearch').addEventListener('click', search);
+    qEl.addEventListener('keydown', function(e){ if(e.key==='Enter') search(); });
+
+    // self-test that JS ran
+    setHealth(h_crossref, true, 'JS carregou');
+  })();
+  </script>
+</body>
 </html>
