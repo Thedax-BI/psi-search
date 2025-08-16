@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PsiSearch • Psicologia (Compat)</title>
+    <meta name="description" content="Busca em tempo real por artigos científicos (Psicologia) — GitHub-only Compat">
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-emerald-50">
+    <header class="sticky top-0 z-10 backdrop-blur bg-white/60 border-b border-gray-100">
+      <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow">Ψ</div>
+          <div class="leading-tight">
+            <div class="text-sm font-semibold text-gray-900">PsiSearch</div>
+            <div class="text-[11px] text-gray-500">GitHub-only (Compat) • Crossref + PubMed + DOAJ</div>
+          </div>
+        </div>
+        <a href="https://github.com/thedax-bi/psi-search" target="_blank" class="text-xs text-gray-500 hover:text-gray-700">GitHub</a>
+      </div>
+      <div class="mx-auto max-w-6xl px-4 pb-3 -mt-2 grid grid-cols-3 gap-2">
+        <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
+          <span>Crossref</span><span id="h_crossref" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
+        </div>
+        <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
+          <span>PubMed</span><span id="h_pubmed" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
+        </div>
+        <div class="rounded-2xl border border-gray-100 bg-white/70 px-3 py-2 text-xs text-gray-700 flex items-center justify-between">
+          <span>DOAJ</span><span id="h_doaj" class="px-2 py-0.5 rounded-full bg-gray-100">checando…</span>
+        </div>
+      </div>
+      <div id="errbar" class="mx-auto max-w-6xl px-4 hidden">
+        <div class="rounded-2xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-700" id="errmsg"></div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <aside class="lg:col-span-3 space-y-4">
+        <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
+          <div class="mb-2 text-sm font-medium text-gray-700">Filtros</div>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs text-gray-600 mb-1">Período (ano)</label>
+              <div class="flex items-center gap-3">
+                <input id="yearFrom" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2019" />
+                <span class="text-xs text-gray-500">—</span>
+                <input id="yearTo" type="number" class="w-24 rounded-2xl border border-gray-200 px-3 py-1.5 text-sm" min="1990" max="2030" value="2025" />
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="oaOnly" type="checkbox" class="rounded border-gray-300" />
+              <label for="oaOnly" class="text-sm text-gray-700">Apenas Open Access (aprox.)</label>
+            </div>
+            <div>
+              <div class="text-xs text-gray-600 mb-1">Idioma (filtragem local)</div>
+              <div class="flex flex-wrap gap-2 text-sm">
+                <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="en" checked> EN</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="pt" checked> PT</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="es" checked> ES</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-3xl border border-gray-100 bg-white/70 p-4">
+          <div class="text-sm font-medium text-gray-700 mb-2">Itens salvos</div>
+          <div id="savedList" class="space-y-3 text-sm text-gray-700"></div>
+        </div>
+      </aside>
+
+      <section class="lg:col-span-9 space-y-4">
+        <div class="rounded-3xl border border-gray-100 bg-white/70 overflow-hidden">
+          <div class="flex items-center gap-2 p-4">
+            <div class="flex-1 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/70 px-3 py-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input id="q" placeholder="Ex.: burnout enfermeiros (mindfulness OR TCC)" class="flex-1 border-0 bg-transparent focus:outline-none text-sm" />
+            </div>
+            <button id="btnSearch" class="rounded-2xl bg-indigo-600 text-white px-4 py-2 text-sm">Buscar</button>
+          </div>
+          <div class="border-t border-gray-100 px-4 py-2 text-xs text-gray-600">
+            GitHub-only (Compat): sem backend.
+          </div>
+        </div>
+        <div id="results" class="space-y-4"></div>
+      </section>
+    </main>
+
+    <footer class="mx-auto max-w-6xl px-4 pb-10 text-xs text-gray-500">
+      <div class="rounded-3xl bg-white/60 p-4 border border-gray-100">
+        Preview • v0.4-compat (GitHub-only) • Sem proxy/worker
+      </div>
+    </footer>
+
+    <script src="./app-compat.js?v=1"></script>
+  </body>
+</html>
