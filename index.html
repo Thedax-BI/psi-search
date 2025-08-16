@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PsiSearch • Single File (v0.6.3)</title>
+  <title>PsiSearch • Single File (v0.6.4)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
@@ -24,34 +24,36 @@
     html.dark .text-gray-700, html.dark .text-gray-600 { color: var(--ink-2) !important; }
     html.dark .text-gray-500 { color: var(--ink-3) !important; }
 
-    /* Badges */
-    html.dark .bg-emerald-100 { background-color: rgba(16,185,129,.15) !important; color: var(--success) !important; border: 1px solid rgba(16,185,129,.25); }
-    html.dark .bg-red-100 { background-color: rgba(239,68,68,.15) !important; color: var(--danger) !important; border: 1px solid rgba(239,68,68,.25); }
-    html.dark .bg-gray-100 { background-color: rgba(148,163,184,.18) !important; color: var(--ink-2) !important; }
-
-    /* Buttons + inputs */
-    html.dark .bg-white.text-gray-700 { background: #0e1a33 !important; color: var(--ink-1) !important; border-color: var(--input-border) !important; }
-    html.dark input[type="text"], html.dark input[type="number"], html.dark select {
-      background: var(--input) !important; border: 1px solid var(--input-border) !important; color: #fff !important; caret-color:#fff !important; box-shadow: var(--shadow);
+    /* Inputs/Selects com texto branco de forma assertiva */
+    html.dark input[type="text"],
+    html.dark input[type="search"],
+    html.dark input[type="number"],
+    html.dark select,
+    html.dark textarea {
+      background: var(--input) !important;
+      border: 1px solid var(--input-border) !important;
+      color: #ffffff !important;
+      -webkit-text-fill-color: #ffffff !important; /* Safari/iOS */
+      caret-color: #ffffff !important;
+      box-shadow: var(--shadow);
     }
+    html.dark #q { color:#fff !important; -webkit-text-fill-color:#fff !important; }
     html.dark input::placeholder { color: #cfd9f2 !important; opacity: .85; }
 
-    /* Cards / chips */
-    html.dark .rounded-3xl { box-shadow: var(--shadow); }
-    html.dark .inline-flex.items-center.rounded-full.border { background: var(--chip) !important; border-color: var(--chip-border) !important; color: var(--ink-2) !important; }
+    /* Títulos dos resultados bem visíveis */
+    html.dark #results h3 { color: #fff !important; opacity: 1 !important; }
 
-    /* Toggle */
-    html.dark #btnTheme { background: #0d1832 !important; color: var(--ink-1) !important; border-color: var(--input-border) !important; }
+    /* Labels (idioma + público) com mais contraste */
+    html.dark #popFilters label,
+    html.dark #langFilters label { color: #fff !important; }
 
-    /* === Pedidos do usuário === */
-    /* 1) Título dos resultados mais legível (branco, sem opacidade) */
-    html.dark #results h3 { color: #fff !important; opacity: 1 !important; text-shadow: 0 0 0 transparent; }
-    /* 2) Labels dos checkboxes (idioma e público-alvo) mais claras */
-    html.dark #popFilters label, html.dark aside .flex.flex-wrap.gap-2.text-sm label { color: var(--ink-1) !important; }
-    /* 3) Borda e foco dos inputs para visibilidade */
-    html.dark input[type="text"]:focus, html.dark input[type="number"]:focus, html.dark select:focus {
-      outline: none; border-color: #8aa2ff !important; box-shadow: 0 0 0 3px rgba(138,162,255,.25);
+    /* Chips / botões */
+    html.dark .inline-flex.items-center.rounded-full.border {
+      background: var(--chip) !important;
+      border-color: var(--chip-border) !important;
+      color: var(--ink-2) !important;
     }
+    html.dark #btnTheme { background: #0d1832 !important; color: var(--ink-1) !important; border-color: var(--input-border) !important; }
 
     @media print { header, aside, footer { display: none !important; } main { display:block; margin:0; padding:0; } .rounded-3xl{ break-inside: avoid; } }
     .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.4rem .8rem; border-radius:999px; border:1px solid #e5e7eb; background:#fff; font-size:.75rem; }
@@ -66,7 +68,7 @@
         <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow">Ψ</div>
         <div class="leading-tight">
           <div class="text-sm font-semibold text-gray-900">PsiSearch</div>
-          <div class="text-[11px] text-gray-500">Single-file • v0.6.3</div>
+          <div class="text-[11px] text-gray-500">Single-file • v0.6.4</div>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -121,10 +123,11 @@
 
         <div>
           <div class="mb-2 text-sm font-medium text-gray-700">Idioma (filtragem local)</div>
-          <div class="flex flex-wrap gap-2 text-sm">
+          <div id="langFilters" class="flex flex-wrap gap-2 text-sm">
             <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="en" checked> EN</label>
             <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="pt" checked> PT</label>
             <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="es" checked> ES</label>
+            <label class="flex items-center gap-1"><input type="checkbox" class="lang" value="fr" checked> FR</label>
           </div>
         </div>
 
@@ -157,11 +160,11 @@
 
   <footer class="mx-auto max-w-6xl px-4 pb-10 text-xs text-gray-500">
     <div class="rounded-3xl bg-white/60 p-4 border border-gray-100">
-      Preview • v0.6.3
+      Preview • v0.6.4
     </div>
   </footer>
 
-  <!-- Script: copia v0.6.2 (lógica inalterada) -->
+  <!-- Script: igual ao v0.6.3 (lógica inalterada) -->
   <script>
   (function(){
     function $(id){ return document.getElementById(id); }
@@ -303,7 +306,6 @@
     document.getElementById('btnPopAll').addEventListener('click', function(){ var boxes=Array.from(document.querySelectorAll('.pop')); var allChecked=boxes.every(function(b){return b.checked;}); boxes.forEach(function(b){ b.checked=!allChecked; }); search(); });
     orderByEl.addEventListener('change', function(){ writeParams(); var y1=Number(yearFromEl.value)||2019; var y2=Number(yearToEl.value)||2025; LAST_RESULTS=sortResults(LAST_RESULTS,y1,y2,orderByEl.value); CURRENT_PAGE=1; renderResults(); });
 
-    function writeParams(){ var p=new URLSearchParams(location.search); p.set('q', $('q').value || ''); p.set('y1', $('yearFrom').value || '2019'); p.set('y2', $('yearTo').value || '2025'); p.set('ord', orderByEl.value); var pops = Array.from(document.querySelectorAll('.pop:checked')).map(function(el){return el.value;}).join(','); p.set('pops', pops); history.replaceState(null, '', '?' + p.toString()); }
     (function(){ var p=new URLSearchParams(location.search); if(p.get('q')) $('q').value=p.get('q'); if(p.get('y1')) $('yearFrom').value=p.get('y1'); if(p.get('y2')) $('yearTo').value=p.get('y2'); var order=p.get('ord'); if(order) orderByEl.value=order; var pops=p.get('pops'); if(pops){ var set={}; pops.split(',').forEach(function(x){set[x]=true;}); document.querySelectorAll('.pop').forEach(function(el){ el.checked=!!set[el.value]; }); } })();
 
     if ((qEl.value||'').trim()) search();
